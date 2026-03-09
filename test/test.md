@@ -1,0 +1,5 @@
+# Running Tests
+
+```bash
+make
+```
