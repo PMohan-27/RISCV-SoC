@@ -1,0 +1,6 @@
+[submodule "rtl/riscv_core"]
+	path = rtl/riscv_core
+	url = https://github.com/PMohan-27/pipelined-riscv-core.git
+[submodule "rtl/axi4"]
+	path = rtl/axi4
+	url = https://github.com/PMohan-27/AXI4.git
