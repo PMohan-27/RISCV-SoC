@@ -4,3 +4,9 @@ test/sim_build
 test/dump.fst
 test/results.xml
 .vscode/
+link.ld
+test.elf
+test.hex
+test.o
+test/dumps/*.txt
+hierarchy.txt
