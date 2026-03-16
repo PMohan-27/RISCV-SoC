@@ -17,7 +17,7 @@ module top(
 
     logic [2:0]  data_type;
 
-    logic data_stall;
+    logic data_done;
 
     logic [31:0] ctrl_rdata;
 
@@ -49,9 +49,18 @@ module top(
         .data_we(data_we),
         .data_re(data_re),
         .data_type(data_type),
-        .data_stall(data_stall)
+        .data_done(data_done)
     );
-
+    // data_mem data_memory_inst(
+    //     .clk(clk), 
+    //     .rst(rst), 
+    //     .DataType(data_type),
+    //     .DataWE(data_we),
+    //     .Address(data_addr),
+    //     .WriteData(data_wdata),
+    //     .ReadData(data_rdata)
+    // );
+    
     cpu_axi_master_bridge cpu_axi_bridge(
         .clk(clk),
         .rst(rst),
@@ -62,7 +71,7 @@ module top(
         .data_re(data_re),
         .data_type(data_type),
         .data_rdata(data_rdata),
-        .data_stall(data_stall),
+        .data_done(data_done),
 
         .ctrl_rdata(ctrl_rdata),
         .ctrl_write_done(ctrl_write_done),

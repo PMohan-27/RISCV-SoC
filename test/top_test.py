@@ -10,21 +10,31 @@ async def test(dut):
     
     cocotb.start_soon(Clock(dut.clk, 10, units="ns").start())
 
+   
+    await RisingEdge(dut.clk)
+    dut.rst.value = 0
     await RisingEdge(dut.clk)
     dut.rst.value = 1
     await RisingEdge(dut.clk)
-    dut.rst.value = 0
-
-
-    await RisingEdge(dut.clk)
     
 
-    for _ in range(400):
+    for _ in range(20000):
         await RisingEdge(dut.clk)
+        
 
             
     dump_regs(dut)
     dump_instrs(dut)
+    # dump_data_mem(dut)
+    dump_tx_reg(dut)
+
+def dump_tx_reg(dut, filename="dumps/txdump.txt"):
+    with open(filename, "w") as f:
+
+        tx = dut.spi_inst.tx_reg
+        for i in range(256):
+            val = tx[i].value.integer
+            f.write(f"tx[{i}] = {val:#010x}  ({val})\n")
 
 def dump_regs(dut, filename="dumps/regdump.txt"):
     regs = dut.cpu_inst.id_pipeline_stage_inst.register_file_inst.registers
@@ -39,6 +49,13 @@ def dump_instrs(dut, filename="dumps/instrdump.txt"):
         for i in range(256):
             val = imem[i].value.integer
             f.write(f"imem[{i}] = {val:#010x}  ({val})\n")
+
+def dump_data_mem(dut, filename="dumps/dmemdump.txt"):
+    with open(filename, "w") as f:
+        dmem = dut.data_memory_inst.memory
+        for i in range(256):
+            val = dmem[i].value.integer
+            f.write(f"dmem[{i}] = {val:#010x}  ({val})\n")
 
 def load_instructions(imem):
     with open('assembly/test.hex') as f:

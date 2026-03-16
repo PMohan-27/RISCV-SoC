@@ -1,15 +1,13 @@
 module cpu_axi_master_bridge(
     input clk, rst,
-    // cpu signals
     input logic [31:0] data_addr,
     input logic [31:0] data_wdata,
     input logic data_we,
     input logic data_re,
     input logic [2:0]  data_type,
-    output  logic [31:0] data_rdata,
-    output logic data_stall,
+    output logic [31:0] data_rdata,
+    output logic data_done,
 
-    // axi lite master
     input logic [31:0] ctrl_rdata,
     input logic ctrl_write_done,
     input logic ctrl_read_done,
@@ -22,30 +20,19 @@ module cpu_axi_master_bridge(
     output logic ctrl_write_req,
     output logic ctrl_read_req
 );
-    logic writing, reading;
-
+    logic ready_write;
     always_ff @(posedge clk) begin
-        if(!rst) begin
-            writing <= 1'b0;
-            reading <= 1'b0;
-        end
-        else begin
-            if(data_we && !writing)  writing <= 1'b1;
-            if(ctrl_write_done)      writing <= 1'b0;
-
-            if(data_re && !reading)  reading <= 1'b1;
-            if(ctrl_read_done)       reading <= 1'b0;
-        end
+        if (!rst)                 ready_write <= 1'b1;
+        else if (ctrl_write_req)  ready_write <= 1'b0;
+        else if (ctrl_write_done) ready_write <= 1'b1;
     end
 
+    assign ctrl_write_req = (data_we & ready_write);
+
+    assign ctrl_waddr = data_addr;
+    assign ctrl_wdata = data_wdata;
     always_comb begin
-        data_stall = (writing || reading);
-
-        ctrl_waddr = data_addr;
-        ctrl_raddr = data_addr;
-
-        ctrl_wdata = data_wdata;
-        case(data_type)
+    case(data_type)
             WORD:       ctrl_wstrb = 4'b1111;
             HALFWORD,
             U_HALFWORD: 
@@ -63,9 +50,18 @@ module cpu_axi_master_bridge(
                 endcase
             default: ctrl_wstrb = 4'b1111;
         endcase
-        data_rdata = ctrl_rdata;
-        
-        ctrl_write_req = data_we && !writing;
-        ctrl_read_req  = data_re && !reading;
     end
+    
+    logic ready_read;
+    always_ff @(posedge clk) begin
+        if (!rst)                ready_read <= 1'b1;
+        else if (ctrl_read_req)  ready_read <= 1'b0;
+        else if (ctrl_read_done) ready_read <= 1'b1;
+    end
+    assign ctrl_read_req = data_re & ready_read;
+    assign data_rdata = ctrl_rdata;
+    assign ctrl_raddr = data_addr;
+
+    assign data_done = (data_we && ctrl_write_done) || (data_re && ctrl_read_done);
+
 endmodule
