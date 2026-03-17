@@ -55,6 +55,7 @@ module spi_peripheral(
     always_ff @(posedge clk) begin
         if (!rst) begin
             slave_write_done <= '0;
+            slave_read_done <= '0;
             slave_bresp      <= '0;
             for (i = 0; i <= 256; i = i + 1)
                 tx_reg[i] <= '0;
@@ -64,7 +65,8 @@ module spi_peripheral(
                 tx_reg[slave_waddr[31:2]] <= slave_wdata;
                 slave_write_done <= '1;
                 slave_bresp      <= 2'b00;
-            end 
+            end else 
+                slave_write_done <= 1'b0;
             if (send_slave_read) begin
                 slave_rdata     <= tx_reg[slave_raddr[31:2]];
                 slave_read_done <= 1'b1;

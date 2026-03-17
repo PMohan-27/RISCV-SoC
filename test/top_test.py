@@ -1,7 +1,6 @@
 import cocotb
 from cocotb.clock import Clock
 from cocotb.triggers import RisingEdge
-
 @cocotb.test()
 async def test(dut):
     imem = dut.cpu_inst.if_pipeline_stage_inst.instruction_memory_inst.instruction_mem
@@ -20,6 +19,8 @@ async def test(dut):
 
     for _ in range(20000):
         await RisingEdge(dut.clk)
+
+
         
 
             
