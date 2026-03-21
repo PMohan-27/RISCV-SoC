@@ -60,7 +60,7 @@ module top(
     //     .WriteData(data_wdata),
     //     .ReadData(data_rdata)
     // );
-    
+
     cpu_axi_master_bridge cpu_axi_bridge(
         .clk(clk),
         .rst(rst),

@@ -20,14 +20,9 @@ async def test(dut):
     for _ in range(20000):
         await RisingEdge(dut.clk)
 
-
-        
-
             
     dump_regs(dut)
     dump_instrs(dut)
-    # dump_data_mem(dut)
-    dump_tx_reg(dut)
 
 def dump_tx_reg(dut, filename="dumps/txdump.txt"):
     with open(filename, "w") as f:
