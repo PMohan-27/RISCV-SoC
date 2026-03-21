@@ -102,6 +102,7 @@ module spi_peripheral(
                     endcase
                     end else slave_write_done <= 1'b0;
                     if(send_slave_read) reading <= 1'b1;
+                    else slave_read_done <= 1'b0;
                     bit_count <= '0;
                     
                     if(reading || writing) begin
@@ -133,6 +134,7 @@ module spi_peripheral(
                         slave_bresp <= 2'b00;
                     end
                     if(reading) begin
+                        slave_rdata <= rx_reg;
                         slave_read_done <= 1'b1;
                         slave_rresp <= 2'b00;
                     end
