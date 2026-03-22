@@ -1,14 +1,14 @@
 import cocotb
 from cocotb.clock import Clock
 from cocotb.triggers import RisingEdge
+
 @cocotb.test()
 async def test(dut):
-    imem = dut.cpu_inst.if_pipeline_stage_inst.instruction_memory_inst.instruction_mem
-    
+    imem = dut.instr_mem_inst.instruction_mem
+
     load_instructions(imem)
     
     cocotb.start_soon(Clock(dut.clk, 10, units="ns").start())
-
    
     await RisingEdge(dut.clk)
     dut.rst.value = 0
@@ -16,10 +16,8 @@ async def test(dut):
     dut.rst.value = 1
     await RisingEdge(dut.clk)
     
-
     for _ in range(20000):
         await RisingEdge(dut.clk)
-
             
     dump_regs(dut)
     dump_instrs(dut)
@@ -41,7 +39,8 @@ def dump_regs(dut, filename="dumps/regdump.txt"):
 
 def dump_instrs(dut, filename="dumps/instrdump.txt"):
     with open(filename, "w") as f:
-        imem = dut.cpu_inst.if_pipeline_stage_inst.instruction_memory_inst.instruction_mem
+        imem = dut.instr_mem_inst.instruction_mem
+
         for i in range(256):
             val = imem[i].value.integer
             f.write(f"imem[{i}] = {val:#010x}  ({val})\n")

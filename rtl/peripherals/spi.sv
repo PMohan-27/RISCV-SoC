@@ -49,7 +49,6 @@ module spi_peripheral(
             endcase
         end
     end
-    //clk 60 MHz -> 10Mhz SCLK    
     reg [31:0] tx_reg, rx_reg;
     logic clk_en;
     logic [6:0] bit_count;

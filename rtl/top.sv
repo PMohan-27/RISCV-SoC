@@ -37,6 +37,12 @@ module top(
     logic ctrl_write_req;
     logic ctrl_read_req;
 
+    logic [31:0] instr_data; 
+    logic instr_valid;
+    logic [31:0] instr_addr;
+    logic instr_ready;
+    logic flush_instr;
+
     axi_lite_if cpu(.ACLK(clk), .ARESETn(rst) );
     axi_lite_if spi(.ACLK(clk), .ARESETn(rst) );
 
@@ -49,17 +55,15 @@ module top(
         .data_we(data_we),
         .data_re(data_re),
         .data_type(data_type),
-        .data_done(data_done)
+        .data_done(data_done),
+
+        .instr_data(instr_data), 
+        .instr_valid(1'b1),
+        .instr_addr(instr_addr),
+        .instr_ready(instr_ready),
+        .flush_instr(flush_instr)
     );
-    // data_mem data_memory_inst(
-    //     .clk(clk), 
-    //     .rst(rst), 
-    //     .DataType(data_type),
-    //     .DataWE(data_we),
-    //     .Address(data_addr),
-    //     .WriteData(data_wdata),
-    //     .ReadData(data_rdata)
-    // );
+
 
     cpu_axi_master_bridge cpu_axi_bridge(
         .clk(clk),
@@ -84,6 +88,11 @@ module top(
         .ctrl_wstrb(ctrl_wstrb),
         .ctrl_write_req(ctrl_write_req),
         .ctrl_read_req(ctrl_read_req)
+    );
+
+    instruction_memory instr_mem_inst(
+        .address(instr_addr),
+        .instruction(instr_data)
     );
 
     axi4_lite_master axi_lite_cpu_master(
