@@ -1,6 +1,6 @@
 # MMIO Maps
 
-This document contains the memory map for MMIO peripherals. Addresses are assumed to be added to base.
+This document contains the memory map for MMIO peripherals. Addresses are to be added to  MMIO base address. **MMIO BASE ADDRESS: 0x8000_0000**
 
 ## SPI | Base Addr: 0x00
 

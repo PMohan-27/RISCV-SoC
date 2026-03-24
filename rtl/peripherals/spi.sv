@@ -9,7 +9,8 @@ module spi_peripheral(
 
     axi_lite_if.slave axi
 );
-
+    localparam DATA_ADDR = 32'h8000_0000;
+    localparam CTRL_ADDR = 32'h8000_0004;
 
     logic [31:0] slave_raddr, slave_waddr;
     logic [31:0] slave_wdata;
@@ -43,7 +44,7 @@ module spi_peripheral(
         else begin 
             case(state) 
                 IDLE: if(reading || writing) state <= TRANSFER;
-                TRANSFER: if(bit_count >= 'd33) state <= DONE;
+                TRANSFER: if(bit_count >= 'd32) state <= DONE;
                 DONE: if(slave_write_done || slave_read_done) state <= IDLE; 
                 default: state <= IDLE;
             endcase
@@ -53,26 +54,33 @@ module spi_peripheral(
     logic clk_en;
     logic [6:0] bit_count;
     logic [3:0] clk_count;
-    logic sclk_d, sclk_rise, sclk_fall; 
+    logic sclk_internal, sclk_toggle; 
     
     always_ff @(posedge clk) begin
         if(!rst) begin 
-            sclk <= '1;
+            sclk_internal <= 1'b1;
+            sclk_toggle <= 1'b0;
             clk_count <= '0;
         end
         else begin
-            if(clk_count >= CTRL[8:5] && clk_en) begin 
-                clk_count <= '0;
-                sclk <= ~sclk;
+            if(clk_en) begin
+                if(clk_count >= CTRL[8:5]) begin 
+                    clk_count <= '0;
+                    sclk_internal <= ~sclk_internal;
+                    sclk_toggle <= 1'b1;
+                end else begin
+                    clk_count <= clk_count + 1;
+                    sclk_toggle <= 1'b0;
+                end
+            end else begin
+                sclk_internal  <= 1'b1; 
+                sclk_toggle <= 1'b0;
             end
-            else clk_count <= clk_count + 1;
-            sclk_d <= sclk;
         end
-
     end
+
     assign clk_en = reading | writing;
-    assign sclk_rise = sclk & ~sclk_d;
-    assign sclk_fall = ~sclk &  sclk_d;
+
     logic reading, writing;
     always_ff @(posedge clk) begin
         if(!rst) begin
@@ -88,12 +96,12 @@ module spi_peripheral(
                 IDLE: begin
                     if (send_slave_write) begin
                     case(slave_waddr)
-                        32'h0000:
+                        DATA_ADDR:
                         begin
                             writing <= 1'b1;
                             DATA <= slave_wdata;
                         end
-                        32'h0004: begin
+                        CTRL_ADDR: begin
                             CTRL <= slave_wdata;
                             slave_write_done <= 1'b1;
                             slave_bresp <= 2'b00;
@@ -115,13 +123,18 @@ module spi_peripheral(
                     end
                 end
                 TRANSFER: begin
-                     if(sclk_fall) begin
-                        bit_count <= bit_count + 1;
-                        mosi <= tx_reg[31];
-                        tx_reg <= {tx_reg[30:0], 1'b0};
-                    end
-                    if(sclk_rise) begin
-                        rx_reg <= {rx_reg[30:0], miso};
+                    if (sclk_toggle) begin
+                        sclk <= sclk_internal;
+
+                        if (!sclk_internal) begin
+                            mosi <= tx_reg[31];
+                            tx_reg <= {tx_reg[30:0], 1'b0};
+                            bit_count <= bit_count + 1;
+                        end
+
+                        if (sclk_internal) begin
+                            rx_reg <= {rx_reg[30:0], miso};
+                        end
                     end
                 end
                 DONE: begin

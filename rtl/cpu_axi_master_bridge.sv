@@ -32,7 +32,7 @@ module cpu_axi_master_bridge(
     assign ctrl_waddr = data_addr;
     assign ctrl_wdata = data_wdata;
     always_comb begin
-    case(data_type)
+        case(data_type)
             WORD:       ctrl_wstrb = 4'b1111;
             HALFWORD,
             U_HALFWORD: 
