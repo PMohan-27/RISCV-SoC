@@ -68,17 +68,6 @@ module top(
         .flush_instr(flush_instr)
     );
 
-    logic [31:0] mosi_shift;
-
-    logic sclk_d;
-
-always_ff @(posedge clk) begin
-    sclk_d <= sclk;
-
-    if (!cs_n && (sclk_d && !sclk)) begin  // falling edge detect
-        mosi_shift <= {mosi_shift[30:0], mosi};
-    end
-end
     cpu_axi_master_bridge cpu_axi_bridge(
         .clk(clk),
         .rst(rst),
