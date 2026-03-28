@@ -207,6 +207,7 @@ module spi_peripheral(
                     if(slave_write_done || slave_read_done)
                         state <= IDLE;
                 end
+                default: state <= IDLE;
             endcase
         end
     end

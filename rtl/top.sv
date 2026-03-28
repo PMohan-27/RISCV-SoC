@@ -47,6 +47,30 @@ module top(
     logic [31:0] sdram_rdata;
     logic sdram_done;
 
+    logic I_sdrc_rst_n;
+    logic I_sdrc_clk;
+    logic I_sdram_clk;
+    logic I_sdrc_cmd_en;
+    logic [2:0] I_sdrc_cmd;
+    logic I_sdrc_precharge_ctrl;
+    logic I_sdram_power_down;
+    logic I_sdram_selfrefresh;
+    logic [20:0] I_sdrc_addr;
+    logic [3:0] I_sdrc_dqm;
+    logic [31:0] I_sdrc_data;
+    logic [7:0] I_sdrc_data_len;
+    logic [31:0] O_sdrc_data;
+    logic O_sdrc_init_done;
+    logic O_sdrc_cmd_ack;
+
+    logic [31:0] mem_addr;
+    logic [31:0] mem_wdata;
+    logic mem_we;
+    logic mem_re;
+    logic [7:0] mem_len;
+    logic [31:0] mem_rdata;
+    logic mem_valid;
+
     axi_lite_if cpu(.ACLK(clk), .ARESETn(rst) );
     axi_lite_if spi(.ACLK(clk), .ARESETn(rst) );
 
@@ -67,7 +91,17 @@ module top(
         .instr_ready(instr_ready),
         .flush_instr(flush_instr)
     );
+    logic [31:0] mosi_shift;
 
+    logic sclk_d;
+
+    always_ff @(posedge clk) begin
+        sclk_d <= sclk;
+
+        if (!cs_n && (sclk_d && !sclk)) begin  // falling edge detect
+            mosi_shift <= {mosi_shift[30:0], mosi};
+        end
+    end
     cpu_axi_master_bridge cpu_axi_bridge(
         .clk(clk),
         .rst(rst),
@@ -93,10 +127,10 @@ module top(
         .ctrl_read_req(ctrl_read_req)
     );
 
-    instruction_memory instr_mem_inst(
-        .address(instr_addr),
-        .instruction(instr_data)
-    );
+    // instruction_memory instr_mem_inst(
+    //     .address(instr_addr),
+    //     .instruction(instr_data)
+    // );
 
     data_interconnect data_interconnect_inst(
         .data_addr   (data_addr),
@@ -123,6 +157,35 @@ module top(
         .sdram_data_rdata (sdram_rdata),
         .sdram_data_done  (sdram_done)
     );
+
+    SDRAM_ARBITER sdram_arbiter_inst(
+        .clk(clk),
+        .rst(rst),
+        .mem_addr(mem_addr),
+        .mem_wdata(mem_wdata),
+        .mem_we(mem_we),
+        .mem_re(mem_re),
+        .mem_len(mem_len), 
+        .mem_rdata(mem_rdata),
+        .mem_valid(mem_valid),
+
+        .data_rdata(sdram_rdata),
+        .data_addr(sdram_addr),
+        .data_wdata(sdram_wdata),
+        .data_we(sdram_we),
+        .data_re(sdram_re),
+        .data_type(sdram_type),
+        .data_done(sdram_done),
+
+        .instr_data(instr_data), 
+        .instr_valid(instr_valid),
+        .instr_addr(instr_addr), 
+        .instr_ready(instr_ready)
+    );
+
+    SDRAM_BRIDGE sdram_bridge_inst(
+        .*
+    );
     axi4_lite_master axi_lite_cpu_master(
         .ctrl_rdata(ctrl_rdata),
         .ctrl_write_done(ctrl_write_done),
@@ -144,7 +207,6 @@ module top(
         .spi(spi)
     );
 
-
     spi_peripheral spi_inst(
         .clk(clk),
         .rst(rst),
@@ -156,6 +218,7 @@ module top(
 
         .axi(spi)
     );
+    
 
     
 endmodule
