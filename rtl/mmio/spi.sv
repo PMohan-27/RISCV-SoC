@@ -14,11 +14,11 @@ module spi_peripheral(
 
     logic [31:0] slave_raddr, slave_waddr;
     logic [31:0] slave_wdata;
-    logic [3:0]  slave_wstrb;
-    logic        send_slave_write, send_slave_read;
+    logic [3:0] slave_wstrb;
+    logic send_slave_write, send_slave_read;
     logic [31:0] slave_rdata;
-    logic        slave_write_done, slave_read_done;
-    logic [1:0]  slave_rresp, slave_bresp;
+    logic slave_write_done, slave_read_done;
+    logic [1:0] slave_rresp, slave_bresp;
 
     axi4_lite_slave axi_slave(
         .slave_raddr(slave_raddr),

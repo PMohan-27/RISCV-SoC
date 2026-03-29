@@ -42,9 +42,9 @@ RISC-V RV32I SoC for Gowin Tang Nano 20K. Boots programs from SD card into SDRAM
 
 ## Documentation
 
-[docs.md](docs.md) - Detailed architecture and module specifications \
-[map.md](map.md) - Memory map and address space layout\
-[test.md](test.md) - Testing procedures and verification
+[docs.md](docs/docs.md) - Detailed architecture and module specifications \
+[map.md](rtl/map.md) - Memory map and address space layout\
+[test.md](test/test.md) - Testing procedures and verification
 
 ## Hardware
 

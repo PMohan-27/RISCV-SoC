@@ -5,7 +5,9 @@ module top(
     output logic sclk,
     output logic mosi,
     input logic miso,
-    output logic cs_n
+    output logic cs_n,
+
+    inout logic [15:0] gpio_pins
 
 );
     logic [31:0] data_rdata;
@@ -73,6 +75,7 @@ module top(
 
     axi_lite_if cpu(.ACLK(clk), .ARESETn(rst) );
     axi_lite_if spi(.ACLK(clk), .ARESETn(rst) );
+    axi_lite_if gpio(.ACLK(clk), .ARESETn(rst) );
 
     cpu cpu_inst(
         .clk(clk),
@@ -127,10 +130,10 @@ module top(
         .ctrl_read_req(ctrl_read_req)
     );
 
-    // instruction_memory instr_mem_inst(
-    //     .address(instr_addr),
-    //     .instruction(instr_data)
-    // );
+    CPU_instruction_memory instr_mem_inst(
+        .address(instr_addr),
+        .instruction(instr_data)
+    );
 
     data_interconnect data_interconnect_inst(
         .data_addr   (data_addr),
@@ -158,34 +161,34 @@ module top(
         .sdram_data_done  (sdram_done)
     );
 
-    SDRAM_ARBITER sdram_arbiter_inst(
-        .clk(clk),
-        .rst(rst),
-        .mem_addr(mem_addr),
-        .mem_wdata(mem_wdata),
-        .mem_we(mem_we),
-        .mem_re(mem_re),
-        .mem_len(mem_len), 
-        .mem_rdata(mem_rdata),
-        .mem_valid(mem_valid),
+    // SDRAM_ARBITER sdram_arbiter_inst(
+    //     .clk(clk),
+    //     .rst(rst),
+    //     .mem_addr(mem_addr),
+    //     .mem_wdata(mem_wdata),
+    //     .mem_we(mem_we),
+    //     .mem_re(mem_re),
+    //     .mem_len(mem_len), 
+    //     .mem_rdata(mem_rdata),
+    //     .mem_valid(mem_valid),
 
-        .data_rdata(sdram_rdata),
-        .data_addr(sdram_addr),
-        .data_wdata(sdram_wdata),
-        .data_we(sdram_we),
-        .data_re(sdram_re),
-        .data_type(sdram_type),
-        .data_done(sdram_done),
+    //     .data_rdata(sdram_rdata),
+    //     .data_addr(sdram_addr),
+    //     .data_wdata(sdram_wdata),
+    //     .data_we(sdram_we),
+    //     .data_re(sdram_re),
+    //     .data_type(sdram_type),
+    //     .data_done(sdram_done),
 
-        .instr_data(instr_data), 
-        .instr_valid(instr_valid),
-        .instr_addr(instr_addr), 
-        .instr_ready(instr_ready)
-    );
+    //     .instr_data(instr_data), 
+    //     .instr_valid(instr_valid),
+    //     .instr_addr(instr_addr), 
+    //     .instr_ready(instr_ready)
+    // );
 
-    SDRAM_BRIDGE sdram_bridge_inst(
-        .*
-    );
+    // SDRAM_BRIDGE sdram_bridge_inst(
+    //     .*
+    // );
     axi4_lite_master axi_lite_cpu_master(
         .ctrl_rdata(ctrl_rdata),
         .ctrl_write_done(ctrl_write_done),
@@ -204,7 +207,8 @@ module top(
 
     axi4_lite_interconnect axi4_lite_interconnect_inst(
         .cpu(cpu),
-        .spi(spi)
+        .spi(spi),
+        .gpio(gpio)
     );
 
     spi_peripheral spi_inst(
@@ -217,6 +221,15 @@ module top(
         .cs_n(cs_n),
 
         .axi(spi)
+    );
+
+    gpio_peripheral gpio_peripheral_inst(
+        .clk(clk),
+        .rst(rst),
+
+        .gpio_pins(gpio_pins),
+
+        .axi(gpio)
     );
     
 
