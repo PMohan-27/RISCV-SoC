@@ -71,7 +71,9 @@ module SDRAM_BRIDGE(
         next_state = state;
         case (state)
             IDLE: begin
-                if (O_sdrc_init_done && (mem_re || mem_we)) begin
+                if (refresh_pending) begin
+                    next_state = REFRESH;
+                end else if (O_sdrc_init_done && (mem_re || mem_we)) begin
                     next_state = ACTIVE;
                 end
             end
@@ -125,7 +127,6 @@ module SDRAM_BRIDGE(
             I_sdrc_cmd <= CMD_NOP;
             I_sdrc_cmd_en <= '0;
             mem_valid <= '0;
-            mem_rdata <= '0;    
             I_sdram_selfrefresh <= 1'b0;
             I_sdram_power_down  <= 1'b0;
             I_sdrc_precharge_ctrl <= 1'b1;
@@ -181,6 +182,7 @@ module SDRAM_BRIDGE(
                 end
                 DONE: begin
                     mem_valid <= 1'b1;
+                    
                 end
                 default: I_sdrc_cmd_en <= '0;
             endcase 

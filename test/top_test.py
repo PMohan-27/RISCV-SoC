@@ -21,7 +21,7 @@ async def test(dut):
             
     dump_regs(dut)
     dump_instrs(dut)
-
+    dump_sdram(dut)
 def dump_tx_reg(dut, filename="dumps/txdump.txt"):
     with open(filename, "w") as f:
 
@@ -48,9 +48,16 @@ def dump_instrs(dut, filename="dumps/instrdump.txt"):
 def dump_data_mem(dut, filename="dumps/dmemdump.txt"):
     with open(filename, "w") as f:
         dmem = dut.data_memory_inst.memory
-        for i in range(256):
+        for i in range(1024):
             val = dmem[i].value.integer
             f.write(f"dmem[{i}] = {val:#010x}  ({val})\n")
+
+def dump_sdram(dut, filename="dumps/sdramdump.txt"):
+    with open(filename, "w") as f:
+        sdram = dut.fake_sdram_inst.mem
+        for i in range(1024):
+            val = sdram[i].value.integer
+            f.write(f"sdram[{i}] = {val:#010x}  ({val})\n")
 
 def load_instructions(imem):
     with open('assembly/test.hex') as f:

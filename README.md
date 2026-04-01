@@ -29,7 +29,7 @@ RISC-V RV32I SoC for Gowin Tang Nano 20K. Boots programs from SD card into SDRAM
 ### Firmware
 
 - [ ] SD card driver
-- [ ] Bootloader (SD card → SDRAM)
+- [ ] Bootloader (SD card to SDRAM)
 - [ ] Binary/ELF loader
 - [ ] Basic test programs
 
@@ -52,4 +52,4 @@ RISC-V RV32I SoC for Gowin Tang Nano 20K. Boots programs from SD card into SDRAM
 
 ## Build & Run
 
-*TODO*
+TODO

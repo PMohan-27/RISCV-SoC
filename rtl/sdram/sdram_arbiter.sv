@@ -21,6 +21,10 @@ module SDRAM_ARBITER(
     input logic [31:0] instr_addr, //PC
     input logic instr_ready
 );
+    localparam SDRAM_TEXT_BEGIN = '0;
+    localparam SDRAM_TEXT_END = 32'h0010_0000;
+
+    logic instr_pending, data_pending;
     always_ff @(posedge clk) begin
         if(!rst) begin
             mem_addr <= '0;
@@ -34,43 +38,50 @@ module SDRAM_ARBITER(
 
             data_done <= '0;
             data_rdata <= '0;
+
+            instr_pending <= 1'b0;
+            data_pending <= 1'b0;
         end else begin
-            if(data_we || data_re) begin
+            data_done <= 1'b0;
+            instr_valid <= 1'b0;
+            if((data_we || data_re) && !data_pending && !instr_pending) begin
                 mem_addr <= data_addr;
                 mem_wdata <= data_wdata;
                 mem_we <= data_we;
                 mem_re <= data_re;
-                mem_len <= 8'd0; // 0 maps to 1
+                mem_len <= 8'd0; // 0 maps to 1 byte
 
-                data_done <= mem_valid;
-                data_rdata <= mem_rdata;
-
-                instr_data <= instr_data;
-                instr_valid <= instr_valid; 
-            end else if(instr_ready) begin
+                data_pending <= 1'b1;
+            end else if(instr_ready && !data_pending && !instr_pending && instr_addr < SDRAM_TEXT_END) begin
                 mem_addr <= instr_addr;
                 mem_wdata <= '0;
                 mem_we <= '0;
                 mem_re <= 1'b1;
                 mem_len <= '0; 
 
-                instr_valid <= mem_valid;
-                instr_data <= mem_rdata;
-
-                data_done <= data_done;
-                data_rdata <= data_rdata;
-            end else begin
+                instr_pending <= 1'b1;
+            end
+            if(mem_valid) begin
                 mem_addr <= '0;
                 mem_wdata <= '0;
                 mem_we <= '0;
                 mem_re <= '0;
                 mem_len <= '0;
 
-                instr_data <= '0;
-                instr_valid <= '0;
-
-                data_done <= '0;
-                data_rdata <= '0;
+                if(data_pending) begin
+                    data_done <= 1'b1;
+                    data_rdata <= mem_rdata;
+                end else if(instr_pending) begin
+                    instr_data <= mem_rdata;
+                    instr_valid <= 1'b1; 
+                end else begin 
+                    data_done <= '0;
+                    data_rdata <= '0;
+                    instr_data <= '0;
+                    instr_valid <= '0; 
+                end
+                instr_pending <= 1'b0;
+                data_pending <= 1'b0;
             end
         end
     end
