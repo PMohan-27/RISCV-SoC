@@ -75,7 +75,7 @@ module top(
     logic mem_re;
     logic [7:0] mem_len;
     logic [31:0] mem_rdata;
-    logic mem_valid;
+    logic mem_valid, mem_ready, mem_done;
 
     axi_lite_if cpu(.ACLK(clk), .ARESETn(rst));
     axi_lite_if spi(.ACLK(clk), .ARESETn(rst));
@@ -191,6 +191,8 @@ module top(
         .mem_len(mem_len),
         .mem_rdata(mem_rdata),
         .mem_valid(mem_valid),
+        // .mem_ready(mem_ready),
+        // .mem_done(mem_done),
         .data_rdata(sdram_rdata),
         .data_addr(sdram_addr),
         .data_wdata(sdram_wdata),

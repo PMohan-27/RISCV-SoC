@@ -22,6 +22,7 @@ async def test(dut):
     dump_regs(dut)
     dump_instrs(dut)
     dump_sdram(dut)
+    
 def dump_tx_reg(dut, filename="dumps/txdump.txt"):
     with open(filename, "w") as f:
 

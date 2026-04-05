@@ -1,7 +1,8 @@
 venv/
 test/__pycache__
 test/sim_build
-test/dump.fst
+test/*.fst
+test/*.gtkw
 test/results.xml
 .vscode/
 link.ld

@@ -13,7 +13,7 @@ VERILOG_SOURCES += $(PROJECT_SOURCES) $(CPU_SOURCES) $(AXI_SOURCES)
 COMPILE_ARGS	+= -I$(SRC_DIR)
 
 TOPLEVEL=top
-COCOTB_TEST_MODULES=top_test
+MODULE=top_test
 
 EXTRA_ARGS += --trace --trace-fst --trace-structs --x-initial unique --x-assign unique
 

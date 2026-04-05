@@ -23,7 +23,8 @@ module SDRAM_ARBITER(
 );
     localparam SDRAM_TEXT_BEGIN = '0;
     localparam SDRAM_TEXT_END = 32'h0010_0000;
-
+    typedef enum logic [1:0] {IDLE, DATA, INSTRUCTION, DONE} transfer_state;
+    transfer_state state;
     logic instr_pending, data_pending;
     always_ff @(posedge clk) begin
         if(!rst) begin
@@ -41,48 +42,53 @@ module SDRAM_ARBITER(
 
             instr_pending <= 1'b0;
             data_pending <= 1'b0;
+
+            state <= IDLE;
         end else begin
-            data_done <= 1'b0;
-            instr_valid <= 1'b0;
-            if((data_we || data_re) && !data_pending && !instr_pending) begin
-                mem_addr <= data_addr;
-                mem_wdata <= data_wdata;
-                mem_we <= data_we;
-                mem_re <= data_re;
-                mem_len <= 8'd0; // 0 maps to 1 byte
-
-                data_pending <= 1'b1;
-            end else if(instr_ready && !data_pending && !instr_pending && instr_addr < SDRAM_TEXT_END) begin
-                mem_addr <= instr_addr;
-                mem_wdata <= '0;
-                mem_we <= '0;
-                mem_re <= 1'b1;
-                mem_len <= '0; 
-
-                instr_pending <= 1'b1;
-            end
-            if(mem_valid) begin
-                mem_addr <= '0;
-                mem_wdata <= '0;
-                mem_we <= '0;
-                mem_re <= '0;
-                mem_len <= '0;
-
-                if(data_pending) begin
-                    data_done <= 1'b1;
-                    data_rdata <= mem_rdata;
-                end else if(instr_pending) begin
-                    instr_data <= mem_rdata;
-                    instr_valid <= 1'b1; 
-                end else begin 
+            case(state)
+                IDLE: begin
+                    
+                    if(data_we ||data_re) state <= DATA;
+                    else if(instr_ready && instr_addr < SDRAM_TEXT_END) state <= INSTRUCTION;
+                end
+                DATA: begin
+                    mem_addr <= data_addr;
+                    mem_wdata <= data_wdata;
+                    mem_we <= data_we;
+                    mem_re <= data_re;
+                    mem_len <= 8'd0; // 0 maps to 1 byte
+                    if(mem_valid) begin
+                        state <= DONE;
+                        data_done <= 1'b1;
+                        data_rdata <= mem_rdata;
+                    end
+                end
+                INSTRUCTION: begin
+                    mem_addr <= instr_addr;
+                    mem_wdata <= '0;
+                    mem_we <= '0;
+                    mem_re <= 1'b1;
+                    mem_len <= '0; 
+                    if(mem_valid) begin
+                        state <= DONE;                    
+                        instr_data <= mem_rdata;
+                        instr_valid <= 1'b1; 
+                    end
+                end
+                DONE: begin
+                    mem_addr <= '0;
+                    mem_wdata <= '0;
+                    mem_we <= '0;
+                    mem_re <= '0;
+                    mem_len <= '0;
                     data_done <= '0;
                     data_rdata <= '0;
                     instr_data <= '0;
                     instr_valid <= '0; 
+                    state <= IDLE;
                 end
-                instr_pending <= 1'b0;
-                data_pending <= 1'b0;
-            end
+                default: state <= IDLE;
+            endcase
         end
     end
 

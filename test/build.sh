@@ -1,4 +1,4 @@
 cd assembly
 bash mem.sh
 cd ..
-make
+make -B

@@ -73,7 +73,7 @@ module SDRAM_BRIDGE(
             IDLE: begin
                 if (refresh_pending) begin
                     next_state = REFRESH;
-                end else if (O_sdrc_init_done && (mem_re || mem_we)) begin
+                end else if (O_sdrc_init_done && (mem_re || mem_we) && !mem_valid) begin
                     next_state = ACTIVE;
                 end
             end
@@ -99,7 +99,8 @@ module SDRAM_BRIDGE(
                     next_state = IDLE;
             end
             DONE: begin
-                next_state = IDLE;
+                if(mem_valid)
+                    next_state = IDLE;
             end
             default: next_state = IDLE;
         endcase
