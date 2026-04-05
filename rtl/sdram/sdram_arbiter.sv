@@ -25,7 +25,7 @@ module SDRAM_ARBITER(
     localparam SDRAM_TEXT_END = 32'h0010_0000;
     typedef enum logic [1:0] {IDLE, DATA, INSTRUCTION, DONE} transfer_state;
     transfer_state state;
-    logic instr_pending, data_pending;
+    logic last_state;
     always_ff @(posedge clk) begin
         if(!rst) begin
             mem_addr <= '0;
@@ -40,16 +40,19 @@ module SDRAM_ARBITER(
             data_done <= '0;
             data_rdata <= '0;
 
-            instr_pending <= 1'b0;
-            data_pending <= 1'b0;
+            last_state <= 1'b0;
 
             state <= IDLE;
         end else begin
             case(state)
                 IDLE: begin
-                    
-                    if(data_we ||data_re) state <= DATA;
-                    else if(instr_ready && instr_addr < SDRAM_TEXT_END) state <= INSTRUCTION;
+                    if(last_state) begin
+                        if(data_we || data_re) state <= DATA;
+                        else if(instr_ready && instr_addr < SDRAM_TEXT_END) state <= INSTRUCTION;
+                    end else begin
+                        if(instr_ready && instr_addr < SDRAM_TEXT_END) state <= INSTRUCTION;
+                        else if(data_we ||data_re) state <= DATA;
+                    end
                 end
                 DATA: begin
                     mem_addr <= data_addr;
@@ -57,6 +60,7 @@ module SDRAM_ARBITER(
                     mem_we <= data_we;
                     mem_re <= data_re;
                     mem_len <= 8'd0; // 0 maps to 1 byte
+                    last_state <= 1'b0;
                     if(mem_valid) begin
                         state <= DONE;
                         data_done <= 1'b1;
@@ -69,6 +73,8 @@ module SDRAM_ARBITER(
                     mem_we <= '0;
                     mem_re <= 1'b1;
                     mem_len <= '0; 
+                    last_state <= 1'b1;
+
                     if(mem_valid) begin
                         state <= DONE;                    
                         instr_data <= mem_rdata;
