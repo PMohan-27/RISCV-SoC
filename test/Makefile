@@ -15,7 +15,7 @@ COMPILE_ARGS	+= -I$(SRC_DIR)
 TOPLEVEL=top
 MODULE=top_test
 
-EXTRA_ARGS += --trace --trace-fst --trace-structs --x-initial unique --x-assign unique
+EXTRA_ARGS += --trace --trace-fst --trace-structs --x-initial unique --x-assign unique  --structs-packed
 
 
 include $(shell cocotb-config --makefiles)/Makefile.sim

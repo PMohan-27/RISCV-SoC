@@ -29,14 +29,25 @@ module top(
     logic ctrl_write_req;
     logic ctrl_read_req;
 
+
+
+
     logic [31:0] instr_data_boot;
-    logic [31:0] instr_data_sdram;
     logic instr_valid_boot;
+
+    logic [31:0] instr_data_icache;
+    logic instr_valid_icache;
+
+    logic [31:0] instr_data_sdram;
     logic instr_valid_sdram;
-    logic [31:0] instr_data;
-    logic instr_valid;
-    logic [31:0] instr_addr;
-    logic instr_ready;
+    logic [31:0] instr_addr_sdram;
+    logic instr_ready_sdram;
+
+    logic [31:0] instr_data_cpu;
+    logic instr_valid_cpu;
+    logic [31:0] instr_addr_cpu;
+    logic instr_ready_cpu;
+    logic instr_last_beat;
     logic flush_instr;
 
     logic [31:0] mmio_addr;
@@ -75,7 +86,7 @@ module top(
     logic mem_re;
     logic [7:0] mem_len;
     logic [31:0] mem_rdata;
-    logic mem_valid, mem_ready, mem_done;
+    logic mem_valid, mem_ready, mem_final_beat;
 
     axi_lite_if cpu(.ACLK(clk), .ARESETn(rst));
     axi_lite_if spi(.ACLK(clk), .ARESETn(rst));
@@ -85,15 +96,15 @@ module top(
     localparam BOOT_SIZE  = 1024; // words
 
     always_comb begin
-        instr_data  = '0;
-        instr_valid = '0;
-        if (instr_addr >= BOOT_START &&
-            instr_addr < BOOT_START + BOOT_SIZE*4) begin
-            instr_data  = instr_data_boot;
-            instr_valid = instr_valid_boot;
+        instr_data_cpu  = '0;
+        instr_valid_cpu = '0;
+        if (instr_addr_cpu >= BOOT_START &&
+            instr_addr_cpu < BOOT_START + BOOT_SIZE*4) begin
+            instr_data_cpu  = instr_data_boot;
+            instr_valid_cpu = instr_valid_boot;
         end else begin
-            instr_data  = instr_data_sdram;
-            instr_valid = instr_valid_sdram;
+            instr_data_cpu = instr_data_icache;
+            instr_valid_cpu = instr_valid_icache;
         end
     end
 
@@ -107,10 +118,10 @@ module top(
         .data_re(data_re),
         .data_type(data_type),
         .data_done(data_done),
-        .instr_data(instr_data),
-        .instr_valid(instr_valid),
-        .instr_addr(instr_addr),
-        .instr_ready(instr_ready),
+        .instr_data(instr_data_cpu),
+        .instr_valid(instr_valid_cpu),
+        .instr_addr(instr_addr_cpu),
+        .instr_ready(instr_ready_cpu),
         .flush_instr(flush_instr)
     );
 
@@ -147,8 +158,24 @@ module top(
         .ctrl_read_req(ctrl_read_req)
     );
 
+    instruction_cache i_cache_inst(
+        .clk(clk),
+        .rst(rst),
+        .cpu_addr(instr_addr_cpu),
+        .cpu_ready(instr_ready_cpu),
+        .cpu_data(instr_data_icache), 
+        .cpu_valid(instr_valid_icache),
+
+        // sdram
+        .instr_data(instr_data_sdram), 
+        .instr_valid(instr_valid_sdram),
+        .instr_addr(instr_addr_sdram),
+        .instr_ready(instr_ready_sdram),
+        .instr_last_beat(instr_last_beat)
+
+    );
     logic [31:0] boot_addr;
-    assign boot_addr = instr_addr - BOOT_START;
+    assign boot_addr = instr_addr_cpu - BOOT_START;
 
     CPU_instruction_memory instr_mem_inst(
         .address(boot_addr),
@@ -191,8 +218,8 @@ module top(
         .mem_len(mem_len),
         .mem_rdata(mem_rdata),
         .mem_valid(mem_valid),
-        // .mem_ready(mem_ready),
-        // .mem_done(mem_done),
+        .mem_final_beat(mem_final_beat),
+
         .data_rdata(sdram_rdata),
         .data_addr(sdram_addr),
         .data_wdata(sdram_wdata),
@@ -200,10 +227,13 @@ module top(
         .data_re(sdram_re),
         .data_type(sdram_type),
         .data_done(sdram_done),
+
         .instr_data(instr_data_sdram),
         .instr_valid(instr_valid_sdram),
-        .instr_addr(instr_addr),
-        .instr_ready(instr_ready)
+        .instr_addr(instr_addr_sdram),
+        .instr_ready(instr_ready_sdram),
+        .instr_last_beat(instr_last_beat)
+
     );
 
     SDRAM_BRIDGE sdram_bridge_inst(
@@ -211,15 +241,7 @@ module top(
     );
 
     fake_sdram fake_sdram_inst(
-        .I_sdrc_clk(I_sdrc_clk),
-        .I_sdrc_rst_n(I_sdrc_rst_n),
-        .I_sdrc_cmd_en(I_sdrc_cmd_en),
-        .I_sdrc_cmd(I_sdrc_cmd),
-        .I_sdrc_addr(I_sdrc_addr),
-        .I_sdrc_data(I_sdrc_data),
-        .O_sdrc_data(O_sdrc_data),
-        .O_sdrc_init_done(O_sdrc_init_done),
-        .O_sdrc_cmd_ack(O_sdrc_cmd_ack)
+        .*
     );
 
     axi4_lite_master axi_lite_cpu_master(
