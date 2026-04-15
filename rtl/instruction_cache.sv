@@ -26,9 +26,11 @@ module instruction_cache(
         logic valid;
         logic [21:0] tag;
         logic [7:0][31:0] data; 
-        logic [1:0] lru;
-    } cache_line_t;
-    
+    } cache_line_t; 
+    // plru[0] -> way 0 or 1 
+    // plru[1] -> way 2 or 3
+    // plru[2] -> plru[0] or plru[1] 
+    logic [2:0] plru [0:31];
     cache_line_t cache [0:31][0:3];
 
 
@@ -38,6 +40,7 @@ module instruction_cache(
 
     logic cache_hit;
     logic [1:0] hit_way;
+    logic [1:0] fill_way;
 
     typedef enum logic [1:0] {IDLE, MISS} cache_state;
     cache_state state;
@@ -52,10 +55,19 @@ module instruction_cache(
                 break;
             end
         end
+
+        fill_way = (plru[set][2]) ? 
+                    (plru[set][1] ? 'd2 : 'd3) 
+                    : (plru[set][0] ? 'd0 : 'd1);
+
+        for (int way = 0; way < 4; way = way + 1)  begin 
+            if(!cache[set][way].valid) begin
+                fill_way = way[1:0];
+                break;
+            end
+        end
     end
 
-    logic [1:0] fill_way;
-    assign fill_way = 0;
     logic [2:0] beat_count;
     
     always_ff @(posedge clk) begin
@@ -63,15 +75,18 @@ module instruction_cache(
             state <= IDLE;
             for (int i = 0; i < 32; i=i+1) begin
                 for (int j = 0; j < 4; j=j+1) begin
-                    cache[i][j] = '0;
+                    cache[i][j] <= '0;
                 end
+            end
+            for (int i = 0; i < 32; i++) begin
+                plru[i] <= 3'b000;
             end
             beat_count <= '0;
             
-            instr_ready  <= 1'b0;
-            instr_addr   <= '0;
+            instr_ready <= 1'b0;
+            instr_addr <= '0;
 
-            cpu_valid    <= 1'b0;
+            cpu_valid <= 1'b0;
 
         end else begin
             
@@ -83,11 +98,31 @@ module instruction_cache(
                     
                     if(cache_hit && cpu_ready) begin
                         cpu_valid <= 1'b1;
+                        case(hit_way) 
+                            'd0: begin
+                                plru[set][0] <= '1;
+                                plru[set][2] <= '1;
+                            end
+                            'd1: begin
+                                plru[set][0] <= '0;
+                                plru[set][2] <= '1;
+                            end
+                            'd2: begin
+                                plru[set][1] <= '1;
+                                plru[set][2] <= '0;
+                            end
+                            'd3: begin
+                                plru[set][1] <= '0;
+                                plru[set][2] <= '0;
+                            end
+                        endcase
                     end else if(cpu_addr <= SDRAM_TEXT_END && cpu_ready)begin
                         state <= MISS;
                     end
                 end
                 MISS: begin
+                     
+                    
                     instr_ready <= 1'b1;
                     instr_addr <= {cpu_addr[31:5], 5'b0};
                     cache[set][fill_way].valid <= 1'b0;
@@ -98,8 +133,25 @@ module instruction_cache(
                             state <= IDLE;
                             cache[set][fill_way].tag <= tag;
                             cache[set][fill_way].valid <= 1'b1;
-                            cache[set][fill_way].lru <= '0;
                             cpu_valid <= 1'b1;
+                            case(hit_way) 
+                                'd0: begin
+                                    plru[set][0] <= '1;
+                                    plru[set][2] <= '1;
+                                end
+                                'd1: begin
+                                    plru[set][0] <= '0;
+                                    plru[set][2] <= '1;
+                                end
+                                'd2: begin
+                                    plru[set][1] <= '1;
+                                    plru[set][2] <= '0;
+                                end
+                                'd3: begin
+                                    plru[set][1] <= '0;
+                                    plru[set][2] <= '0;
+                                end
+                            endcase
                         end
                         beat_count++;
                     end
@@ -108,7 +160,7 @@ module instruction_cache(
             endcase
         end
     end
-    assign cpu_data = cache[set][hit_way].data[byte_offset[4:2]];
+    assign cpu_data = cache_hit ? cache[set][hit_way].data[byte_offset[4:2]] : '0;
     
 
 endmodule

@@ -3,7 +3,6 @@
 This document contains the memory map. Addresses are to be added to base address.
 These addresses are byte addressed.
 
-
 ## SDRAM ADDRESS SPACE: 0x0000_0000 - 0x007F_FFFF
 
 ## BOOT ROM ADDRESS SPACE: 0xFFFF_0000 - 0xFFFF_FFFF
