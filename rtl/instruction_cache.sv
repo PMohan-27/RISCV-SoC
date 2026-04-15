@@ -86,18 +86,14 @@ module instruction_cache(
             instr_ready <= 1'b0;
             instr_addr <= '0;
 
-            cpu_valid <= 1'b0;
 
         end else begin
             
             case(state) 
                 IDLE: begin
-                    beat_count <= '0;
                     instr_ready <= 1'b0;
-                    cpu_valid <= '0;
                     
                     if(cache_hit && cpu_ready) begin
-                        cpu_valid <= 1'b1;
                         case(hit_way) 
                             'd0: begin
                                 plru[set][0] <= '1;
@@ -117,6 +113,7 @@ module instruction_cache(
                             end
                         endcase
                     end else if(cpu_addr <= SDRAM_TEXT_END && cpu_ready)begin
+                        beat_count <= '0;
                         state <= MISS;
                     end
                 end
@@ -133,7 +130,6 @@ module instruction_cache(
                             state <= IDLE;
                             cache[set][fill_way].tag <= tag;
                             cache[set][fill_way].valid <= 1'b1;
-                            cpu_valid <= 1'b1;
                             case(hit_way) 
                                 'd0: begin
                                     plru[set][0] <= '1;
@@ -160,6 +156,7 @@ module instruction_cache(
             endcase
         end
     end
+    assign cpu_valid = cache_hit && cpu_ready;
     assign cpu_data = cache_hit ? cache[set][hit_way].data[byte_offset[4:2]] : '0;
     
 
