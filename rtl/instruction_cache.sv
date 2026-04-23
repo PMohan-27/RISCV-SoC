@@ -17,7 +17,6 @@ module instruction_cache(
     localparam SDRAM_TEXT_END = 32'h0010_0000;
 
     // 4KB 4 way 32B lines
-    // TODO: Add LRU and proper replacement
     logic [21:0] tag;
     logic [4:0] byte_offset;
     logic [4:0] set;

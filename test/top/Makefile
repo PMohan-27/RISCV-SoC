@@ -1,7 +1,7 @@
 SIM ?= verilator
 TOPLEVEL_LANG = verilog
-SRC_DIR = $(PWD)/../rtl
-IP_DIR = $(PWD)/../ip
+SRC_DIR = $(PWD)/../../rtl
+IP_DIR = $(PWD)/../../ip
 
 PROJECT_SOURCES = $(shell find $(SRC_DIR)/ -type f -name '*.sv')
 CPU_SOURCES =  $(shell find $(IP_DIR)/riscv_core/rtl -type f -name '*.sv' | grep -v '/top\.sv$$')

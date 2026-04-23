@@ -52,7 +52,6 @@ module SDRAM_BRIDGE(
         if(!rst) begin
             state <= IDLE;
 
-            I_sdrc_dqm <= '0;
             I_sdrc_addr <= '0;
             I_sdrc_cmd <= CMD_NOP;
             I_sdrc_cmd_en <= '0;

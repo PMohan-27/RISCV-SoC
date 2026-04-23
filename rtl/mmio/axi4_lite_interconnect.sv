@@ -22,19 +22,22 @@
 module axi4_lite_interconnect(
     axi_lite_if cpu, //input from cpu
     axi_lite_if spi, //output to spi periph
-    axi_lite_if gpio
+    axi_lite_if gpio,
+    axi_lite_if csr
 );  
     localparam SPI_BASE  = 32'h8000_0000;
     localparam SPI_END   = 32'h8000_0007; 
     localparam GPIO_BASE = 32'h8000_0008;
     localparam GPIO_END  = 32'h8000_000B;  
-
-    logic sel_spi, sel_gpio;
+    localparam CSR_BASE  = 32'h8000_000C;
+    localparam CSR_END   = 32'h8000_000F;
+    logic sel_spi, sel_gpio, sel_csr;
     logic busy;
      always_ff @(posedge cpu.ACLK or negedge cpu.ARESETn) begin
         if (!cpu.ARESETn) begin
             sel_spi  <= 1'b0;
             sel_gpio <= 1'b0;
+            sel_csr <= 1'b0;
             busy <= 1'b0;
         end else begin
             if (!busy) begin
@@ -44,6 +47,9 @@ module axi4_lite_interconnect(
 
                     sel_gpio <= (cpu.AWVALID && cpu.AWADDR >= GPIO_BASE && cpu.AWADDR <= GPIO_END) ||
                     (cpu.ARVALID && cpu.ARADDR >= GPIO_BASE && cpu.ARADDR <= GPIO_END);
+                    
+                    sel_csr  <= (cpu.AWVALID && cpu.AWADDR >= CSR_BASE  && cpu.AWADDR <= CSR_END) ||
+                    (cpu.ARVALID && cpu.ARADDR >= CSR_BASE  && cpu.ARADDR <= CSR_END);
 
                     busy <= 1'b1;
                 end
@@ -52,6 +58,7 @@ module axi4_lite_interconnect(
                     busy <= 1'b0;
                     sel_gpio <= 1'b0;
                     sel_spi <= 1'b0;
+                    sel_csr <= 1'b0;
                 end
             end
         end
@@ -89,11 +96,25 @@ module axi4_lite_interconnect(
         gpio.ARPROT  = '0;
         gpio.ARVALID = 1'b0;
         gpio.RREADY  = 1'b0;
-    
-        if(sel_gpio) begin 
-             `AXI_LITE_CONNECT(cpu, gpio)
+
+        csr.AWADDR  = '0;
+        csr.AWPROT  = '0;
+        csr.AWVALID = 1'b0;
+        csr.WDATA   = '0;
+        csr.WSTRB   = '0;
+        csr.WVALID  = 1'b0;
+        csr.BREADY  = 1'b0;
+        csr.ARADDR  = '0;
+        csr.ARPROT  = '0;
+        csr.ARVALID = 1'b0;
+        csr.RREADY  = 1'b0;
+
+        if (sel_gpio) begin 
+            `AXI_LITE_CONNECT(cpu, gpio)
         end else if (sel_spi) begin
-             `AXI_LITE_CONNECT(cpu, spi);
+            `AXI_LITE_CONNECT(cpu, spi)
+        end else if (sel_csr) begin
+            `AXI_LITE_CONNECT(cpu, csr)
         end
     end
 endmodule

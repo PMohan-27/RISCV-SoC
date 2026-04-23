@@ -22,7 +22,7 @@ module cpu_axi_master_bridge(
 );
     logic ready_write;
     always_ff @(posedge clk) begin
-        if (!rst)                 ready_write <= 1'b1;
+        if (!rst) ready_write <= 1'b1;
         else if (ctrl_write_req)  ready_write <= 1'b0;
         else if (ctrl_write_done) ready_write <= 1'b1;
     end
@@ -33,15 +33,13 @@ module cpu_axi_master_bridge(
     assign ctrl_wdata = data_wdata;
     always_comb begin
         case(data_type)
-            WORD:       ctrl_wstrb = 4'b1111;
-            HALFWORD,
-            U_HALFWORD: 
+            WORD: ctrl_wstrb = 4'b1111;
+            HALFWORD, U_HALFWORD: 
                 case(data_addr[1])
                     1'b0: ctrl_wstrb = 4'b0011;
                     1'b1: ctrl_wstrb = 4'b1100;
                 endcase
-            BYTE,
-            U_BYTE:
+            BYTE, U_BYTE:
                 case(data_addr[1:0])
                     2'b00: ctrl_wstrb = 4'b0001;
                     2'b01: ctrl_wstrb = 4'b0010;
@@ -54,7 +52,7 @@ module cpu_axi_master_bridge(
     
     logic ready_read;
     always_ff @(posedge clk) begin
-        if (!rst)                ready_read <= 1'b1;
+        if (!rst) ready_read <= 1'b1;
         else if (ctrl_read_req)  ready_read <= 1'b0;
         else if (ctrl_read_done) ready_read <= 1'b1;
     end

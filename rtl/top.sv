@@ -91,6 +91,8 @@ module top(
     axi_lite_if cpu(.ACLK(clk), .ARESETn(rst));
     axi_lite_if spi(.ACLK(clk), .ARESETn(rst));
     axi_lite_if gpio(.ACLK(clk), .ARESETn(rst));
+    axi_lite_if csr(.ACLK(clk), .ARESETn(rst));
+
 
     localparam BOOT_START = 32'hFFFF_0000;
     localparam BOOT_SIZE  = 1024; // words
@@ -262,7 +264,8 @@ module top(
     axi4_lite_interconnect axi4_lite_interconnect_inst(
         .cpu(cpu),
         .spi(spi),
-        .gpio(gpio)
+        .gpio(gpio),
+        .csr(csr)
     );
 
     spi_peripheral spi_inst(
@@ -280,6 +283,12 @@ module top(
         .rst(rst),
         .gpio_pins(gpio_pins),
         .axi(gpio)
+    );
+
+    CSR_peripheral csr_peripheral_inst(
+        .clk(clk),
+        .rst(rst),
+        .axi(csr)
     );
 
 endmodule
