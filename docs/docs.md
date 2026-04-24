@@ -12,7 +12,6 @@ Detailed architecture and implementation specifications for RISCV-SoC.
 **SDRAM**: Gowin embedded IP connected via SDRAM Bridge  
 **CPU SDRAM Arbiter**: Arbitrates instruction and data requests, prioritizes data  
 **Data Interconnect**: Routes to SDRAM or MMIO by address  
-**Instruction Path**: CPU → arbiter → SDRAM (cache bypassed currently)
 
 ## Interconnect
 
@@ -25,6 +24,7 @@ See [map.md](../rtl/map.md) for register maps.
 
 **SPI**: SD card interface  
 **GPIO**: FPGA pin control
+**CSR**: Currently only used for IPC
 
 ## Boot Flow
 

@@ -5,6 +5,9 @@ These addresses are byte addressed.
 
 ## SDRAM ADDRESS SPACE: 0x0000_0000 - 0x007F_FFFF
 
+SDRAM TEXT SPACE: 0x0000_0000 - 0x003F_FFFF
+SDRAM DATA SPACE: 0x0040_0000 - 0x007F_FFFF
+
 ## BOOT ROM ADDRESS SPACE: 0xFFFF_0000 - 0xFFFF_FFFF
 
 ## MMIO ADDRESS SPACE : 0x8000_0000 - 0xFFFEFFFF
@@ -32,3 +35,11 @@ Currently RESP, CPHA, CPOL ae not used in logic. TODO
 | Bits       | 31-16                     | 15-0       |
 |------------|---------------------------|------------|
 | DIRECTION  | DIR[15:0] HIGH out LOW in | DATA[15:0] |
+
+### CSR | Base Addr: 0x0C
+
+0x0C:
+
+| Bits       | 31-0                      |
+|------------|---------------------------|
+| REGISTER   | Clock Cycles [31:0]       |

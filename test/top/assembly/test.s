@@ -16,7 +16,7 @@ sw x5, 8(x2)
 sw x6, 12(x2)
 sw x7, 16(x2)
 
-li x10, 0x8000000C // csr for IPC calculation
+li x10, 0x8000000C # csr for IPC calculation
 lw x15, 0(x10)
 
 jalr x0, 0x0

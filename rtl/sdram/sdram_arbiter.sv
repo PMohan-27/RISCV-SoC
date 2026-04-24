@@ -25,7 +25,9 @@ module SDRAM_ARBITER(
     input logic instr_ready
 );
 
-    localparam SDRAM_TEXT_END = 32'h0010_0000;
+    localparam SDRAM_TEXT_BASE = 32'h0000_0000;
+    localparam SDRAM_DATA_BASE = 32'h0040_0000;
+    localparam SDRAM_END = 32'h0080_0000; 
 
     logic busy;
     logic owner;
@@ -36,13 +38,13 @@ module SDRAM_ARBITER(
             owner <= 1'b0;
         end else begin
             if (!busy) begin
-                if (instr_ready && instr_addr < SDRAM_TEXT_END) begin
-                    busy <= 1'b1;
-                    owner <= 1'b1;
-                end else if (data_we || data_re) begin
+                if ((data_we || data_re) && data_addr < SDRAM_END) begin
                     busy <= 1'b1;
                     owner <= 1'b0;
-                end
+                end else if (instr_ready && instr_addr < SDRAM_DATA_BASE) begin
+                    busy <= 1'b1;
+                    owner <= 1'b1;
+                end 
             end else begin
                 if (mem_valid && mem_final_beat) begin
                     busy <= 1'b0;

@@ -13,3 +13,7 @@ dumps
 hierarchy.txt
 *.txt
 gowin/
+*.o
+*.elf
+*.hex
+*.bin
