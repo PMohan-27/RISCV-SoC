@@ -56,7 +56,7 @@ def dump_data_mem(dut, filename="dumps/dmemdump.txt"):
 def dump_sdram(dut, filename="dumps/sdramdump.txt"):
     with open(filename, "w") as f:
         sdram = dut.fake_sdram_inst.mem
-        for i in range(1024):
+        for i in range(0, 0x200000):
             val = sdram[i].value.integer
             f.write(f"sdram[{i}] = {val:#010x}  ({val})\n")
 

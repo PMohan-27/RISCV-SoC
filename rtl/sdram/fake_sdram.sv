@@ -21,7 +21,7 @@ module fake_sdram(
     localparam CMD_WRITE = 3'b100;
     localparam tCL = 1;
 /* verilator lint_off WIDTHTRUNC */
-    logic [31:0] mem [0:1024];
+    logic [31:0] mem [0:2097151]; // 8M
 
     logic [1:0] tcl_counter;
     logic [7:0] burst_counter;

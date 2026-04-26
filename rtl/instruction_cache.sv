@@ -14,7 +14,7 @@ module instruction_cache(
     output logic instr_ready
 
 );
-    localparam SDRAM_TEXT_END = 32'h0010_0000;
+    localparam SDRAM_TEXT_END = 32'h0040_0000;
 
     // 4KB 4 way 32B lines
     logic [21:0] tag;
