@@ -135,8 +135,7 @@ module spi_peripheral(
                                 writing <= 1'b1;
                                 DATA <= slave_wdata;
                                 tx_reg <= slave_wdata[31:24];
-                                // state <= TRANSFER;
-                        slave_write_done <= 1'b1;
+                                state <= TRANSFER;
 
                             end
                             CTRL_ADDR: begin

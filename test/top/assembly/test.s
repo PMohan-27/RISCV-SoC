@@ -1,18 +1,12 @@
 .global _start
 _start:
-lui     sp,0x800
-auipc   t0,0x0
-addi    t0,t0,12
-jr      t0
 
-addi    sp,sp,-16
-sw      ra,12(sp)
-sw      s0,8(sp)
-addi    s0,sp,16
-li      a4,0
-lui     a5,0xdeadc
-addi    a5,a5,-273
-sw      a5,0(a4)
+lui a5, 0x80000 
+addi a5, a5, 4
+# li x2, 0x80000004
+# li x1, 0x01
+# sw x1, 0(x2)
+
 # li x2, 0x0
 
 # li x3, 0x00a00493 # addi x9, x0, 10

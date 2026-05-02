@@ -16,7 +16,7 @@ async def test(dut):
     dut.rst.value = 1
     await RisingEdge(dut.clk)
     
-    for _ in range(20000):
+    for _ in range(2000000):
         await RisingEdge(dut.clk)
             
     dump_regs(dut)
