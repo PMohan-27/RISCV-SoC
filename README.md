@@ -18,7 +18,7 @@ RISC-V RV32I SoC for Gowin Tang Nano 20K. Boots programs from SD card into SDRAM
 ### Hardware Modules
 
 - [x] RV32I CPU core
-- [ ] Instruction cache
+- [x] Instruction cache
 - [x] CPU SDRAM arbiter
 - [x] AXI4-Lite interconnect
 - [x] AXI4-Lite to CPU bridge
@@ -28,17 +28,9 @@ RISC-V RV32I SoC for Gowin Tang Nano 20K. Boots programs from SD card into SDRAM
 
 ### Firmware
 
-- [ ] SD card driver
-- [ ] Bootloader (SD card to SDRAM)
-- [ ] Binary/ELF loader
-- [ ] Basic test programs
-
-### Integration & Testing
-
-- [ ] Module level testbenches
-- [ ] System integration
-- [ ] FPGA synthesis and timing
-- [ ] Hardware bring-up and validation
+- [x] SD card driver
+- [x] Bootloader (SD card to SDRAM)
+- [x] Basic test programs
 
 ## Documentation
 
@@ -49,7 +41,3 @@ RISC-V RV32I SoC for Gowin Tang Nano 20K. Boots programs from SD card into SDRAM
 ## Hardware
 
 **FPGA Board**: Gowin Tang Nano 20K
-
-## Build & Run
-
-TODO

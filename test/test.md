@@ -4,21 +4,20 @@ Testing procedures and verification for RISCV-SoC.
 
 ## Running Tests
 
-Edit [test.s](assembly/test.s) and run:
+Navigate to the test directory and run the build script:
+
 ```bash
+cd test
 bash build.sh
 ```
 
+You'll be prompted to enter the module name you want to test.
 
+## Compiling Tests
 
-## Test Coverage
+To compile firmware (C) for boot rom:
 
-*TODO: Module testbenches, integration tests*
-
-## Hardware Validation
-
-*TODO: FPGA synthesis and bring-up*
-
-## Known Issues
-
-*TODO*
+```bash
+cd firmware
+bash compile.sh
+```
